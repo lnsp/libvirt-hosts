@@ -1,5 +1,10 @@
+# path to libvirt unix socket
 socket: /var/run/libvirt/libvirt-sock
+# network to watch
 network: default
+# refresh interval in ms
 interval: 500
+# path to hostfile
 hostfile: hosts
+# domain suffix
 domain: local
