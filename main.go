@@ -17,7 +17,7 @@ import (
 
 type config struct {
 	Socket   string `yaml:"socket"`
-	Network  string `yaml:"network,default:/var/run/libvirt/libvirt-sock"`
+	Network  string `yaml:"network"`
 	Interval int64  `yaml:"interval"`
 	Hostfile string `yaml:"hostfile"`
 	Domain   string `yaml:"domain"`
@@ -43,7 +43,12 @@ func run() error {
 	if err := l.Connect(); err != nil {
 		return fmt.Errorf("failed to connect: %v", err)
 	}
-	defer l.Disconnect()
+	defer func() {
+		log.Printf("shutting down daemon")
+		if err := l.Disconnect(); err != nil {
+			fmt.Printf("failed to disconnect: %v", err)
+		}
+	}()
 	v, err := l.Version()
 	if err != nil {
 		return fmt.Errorf("failed to retrieve libvirt version: %v", err)
@@ -64,13 +69,16 @@ func run() error {
 			return nil
 		case <-time.After(time.Millisecond * time.Duration(cfg.Interval)):
 		}
-		leases, _, err := l.NetworkGetDhcpLeases(n, nil, 0, 0)
+		leases, _, err := l.NetworkGetDhcpLeases(n, nil, -1, 0)
 		if err != nil {
 			log.Printf("failed to get leases: %v", err)
 		}
 		var buf bytes.Buffer
 		for _, lease := range leases {
-			fmt.Fprintf(&buf, "%s.%s %s\n", lease.Hostname, cfg.Domain, lease.Ipaddr)
+			if len(lease.Hostname) == 0 {
+				continue
+			}
+			fmt.Fprintf(&buf, "%s.%s %s\n", lease.Hostname[0], cfg.Domain, lease.Ipaddr)
 		}
 		if err := ioutil.WriteFile(cfg.Hostfile, buf.Bytes(), 0644); err != nil {
 			log.Printf("failed to write hostfile: %v", err)
