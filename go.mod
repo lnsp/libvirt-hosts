@@ -1,4 +1,4 @@
-module git.home.arpa/lnsp/libvirt-dns
+module git.home.arpa/lnsp/libvirt-hosts
 
 go 1.13
 
