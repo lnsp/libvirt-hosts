@@ -22,6 +22,7 @@ jobs:
       run: |
         GOOS=linux GOARCH=amd64 go build -tags static -o libvirt-hosts .
     - name: Create release
+      id: create-release
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} 
@@ -35,7 +36,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        upload_url: ${{ steps.create-release.outputs.upload_url }}
         asset_path: ./libvirt-hosts
         asset_name: libvirt-hosts
         asset_content_type: binary/octet-stream
