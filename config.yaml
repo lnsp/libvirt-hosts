@@ -2,3 +2,4 @@ socket: /var/run/libvirt/libvirt-sock
 network: default
 interval: 500
 hostfile: hosts
+domain: local
