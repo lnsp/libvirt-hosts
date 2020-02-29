@@ -87,12 +87,23 @@ func run() error {
 		if err != nil {
 			log.Printf("failed to get leases: %v", err)
 		}
-		var buf bytes.Buffer
+		addrs := make(map[string]libvirt.NetworkDhcpLease)
 		for _, lease := range leases {
 			if len(lease.Hostname) == 0 {
 				continue
 			}
-			fmt.Fprintf(&buf, "%s\t%s.%s\n", lease.Ipaddr, lease.Hostname[0], cfg.Domain)
+			host := lease.Hostname[0]
+			if lease.Expirytime > addrs[host].Expirytime {
+				addrs[host] = lease
+			}
+		}
+		var buf bytes.Buffer
+		for host, lease := range addrs {
+			fqdn := host
+			if cfg.Domain != "" {
+				fqdn += "." + cfg.Domain
+			}
+			fmt.Fprintf(&buf, "%s\t%s\n", lease.Ipaddr, fqdn)
 		}
 		if err := ioutil.WriteFile(cfg.Hostfile, buf.Bytes(), 0644); err != nil {
 			log.Printf("failed to write hostfile: %v", err)
