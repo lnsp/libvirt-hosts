@@ -92,7 +92,7 @@ func run() error {
 			if len(lease.Hostname) == 0 {
 				continue
 			}
-			fmt.Fprintf(&buf, "%s.%s %s\n", lease.Hostname[0], cfg.Domain, lease.Ipaddr)
+			fmt.Fprintf(&buf, "%s\t%s.%s\n", lease.Ipaddr, lease.Hostname[0], cfg.Domain)
 		}
 		if err := ioutil.WriteFile(cfg.Hostfile, buf.Bytes(), 0644); err != nil {
 			log.Printf("failed to write hostfile: %v", err)
